@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-
+import { useRouter } from 'next/navigation';
 
 type LoginResponse = {
   isSuccess: boolean;
@@ -23,12 +23,15 @@ export default function LoginPage() {
     userName: '',
     password: ''
   });
+
   const [message, setMessage] = useState('');
   const [userInfo, setUserInfo] = useState<null | {
     email: string;
     name: string;
     phoneNumber: string;
   }>(null);
+
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -42,11 +45,16 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+
       const data: LoginResponse = await res.json();
+
       if (res.ok && data.isSuccess && data.result) {
         setUserInfo(data.result.user);
         setMessage('✅ Inicio de sesión exitoso');
-        sessionStorage.setItem('token', data.result.token); // o localStorage.setItem(...)
+        sessionStorage.setItem('token', data.result.token);
+
+        // Redirigir después de un pequeño retraso
+        setTimeout(() => router.push('/welcome'), 800);
       } else {
         setUserInfo(null);
         setMessage(`❌ ${data.message || 'Credenciales inválidas'}`);
@@ -59,9 +67,7 @@ export default function LoginPage() {
   };
 
   return (
-
     <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans text-base leading-relaxed">
-
       <motion.div
         className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md"
         initial={{ opacity: 0, y: -20 }}
@@ -71,6 +77,7 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-black mb-6 text-center">
           Inicio de Sesión
         </h1>
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="userName" className="block mb-1 text-black font-medium">Usuario</label>
@@ -86,6 +93,7 @@ export default function LoginPage() {
               transition={{ duration: 0.2 }}
             />
           </div>
+
           <div>
             <label htmlFor="password" className="block mb-1 text-black font-medium">Contraseña</label>
             <motion.input
@@ -100,6 +108,7 @@ export default function LoginPage() {
               transition={{ duration: 0.2 }}
             />
           </div>
+
           <motion.button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-transform"
@@ -110,9 +119,14 @@ export default function LoginPage() {
             Iniciar Sesión
           </motion.button>
         </form>
+
         {message && (
           <motion.div
-            className={`mt-5 p-3 rounded-lg text-sm text-black bg-${message.startsWith('✅') ? 'green' : 'red'}-500`}
+            className={`mt-5 p-3 rounded-lg text-sm text-white ${
+              message.startsWith('✅') ? 'bg-green-500' :
+              message.startsWith('❌') ? 'bg-red-500' :
+              message.startsWith('🔥') ? 'bg-orange-500' : 'bg-gray-400'
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
@@ -120,6 +134,7 @@ export default function LoginPage() {
             {message}
           </motion.div>
         )}
+
         {userInfo && (
           <motion.div
             className="mt-6 bg-green-50 border border-green-300 rounded-lg p-4 text-black"

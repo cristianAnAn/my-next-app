@@ -1,11 +1,32 @@
-// components/Navbar.tsx
-
 'use client';
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
+
+
+type DecodedToken = {
+  roles: string[];
+};
 
 export default function Navbar() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+        if (decoded.roles?.includes('ADMINISTRADOR')) {
+          setIsAdmin(true);
+        }
+      } catch (err) {
+        console.error('Error al decodificar token:', err);
+      }
+    }
+  }, []);
+
   return (
     <motion.nav
       className="bg-white shadow-md"
@@ -22,26 +43,12 @@ export default function Navbar() {
           Mi Aplicación
         </motion.h1>
         <ul className="flex space-x-6">
-          <li>
-            <Link href="/" className="text-black font-medium hover:text-blue-700 transition-colors">
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link href="/register" className="text-black font-medium hover:text-blue-700 transition-colors">
-              Registrar
-            </Link>
-          </li>
-          <li>
-            <Link href="/login" className="text-black font-medium hover:text-blue-700 transition-colors">
-              Iniciar Sesión
-            </Link>
-          </li>
-          <li>
-            <Link href="/assignrole" className="text-black font-medium hover:text-blue-700 transition-colors">
-              Asignar Rol
-            </Link>
-          </li>
+          <li><Link href="/" className="text-black font-medium hover:text-blue-700">Home</Link></li>
+          <li><Link href="/register" className="text-black font-medium hover:text-blue-700">Registrar</Link></li>
+          <li><Link href="/login" className="text-black font-medium hover:text-blue-700">Iniciar Sesión</Link></li>
+          {isAdmin && (
+            <li><Link href="/assignrole" className="text-black font-medium hover:text-blue-700">Asignar Rol</Link></li>
+          )}
         </ul>
       </div>
     </motion.nav>

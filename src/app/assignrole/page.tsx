@@ -1,8 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
+
+type DecodedToken = {
+  roles: string[];
+  exp: number;
+};
 
 export default function AssignRolePage() {
   const [formData, setFormData] = useState({
@@ -10,8 +17,29 @@ export default function AssignRolePage() {
     role: ''
   });
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const decoded: DecodedToken = jwtDecode(token);
+      const isAdmin = decoded.roles.includes('ADMINISTRADOR');
+
+      if (!isAdmin) {
+        router.push('/');
+      }
+    } catch (err) {
+      console.error('Token inválido o corrupto');
+      router.push('/login');
+    }
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -20,7 +48,10 @@ export default function AssignRolePage() {
     try {
       const res = await fetch('http://localhost:3000/api/auth/assignRole', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
@@ -37,7 +68,6 @@ export default function AssignRolePage() {
 
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans text-base leading-relaxed">
-
       <motion.div
         className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md"
         initial={{ opacity: 0, y: -20 }}
@@ -61,17 +91,20 @@ export default function AssignRolePage() {
             />
           </div>
           <div>
-            <label htmlFor="role" className="block mb-1 text-black font-medium">Nombre del rol</label>
-            <motion.input
+            <label htmlFor="role" className="block mb-1 text-black font-medium">Rol a asignar</label>
+            <motion.select
               id="role"
               name="role"
-              placeholder="ej. admin"
               onChange={handleChange}
               required
               className="w-full p-3 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
               whileFocus={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
-            />
+            >
+              <option value="">Selecciona un rol</option>
+              <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+              <option value="USUARIO">USUARIO</option>
+            </motion.select>
           </div>
           <motion.button
             type="submit"
