@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
-
+import NavbarLoggedIn from '@/components/NavbarLoggedIn';
 type DecodedToken = {
   roles: string[];
   exp: number;
@@ -67,6 +67,8 @@ export default function AssignRolePage() {
   };
 
   return (
+        <>
+      <NavbarLoggedIn />
     <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans text-base leading-relaxed">
       <motion.div
         className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md"
@@ -129,5 +131,6 @@ export default function AssignRolePage() {
         )}
       </motion.div>
     </main>
+        </>
   );
 }

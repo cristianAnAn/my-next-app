@@ -1,9 +1,9 @@
-// app/welcome/page.tsx
 'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
+import NavbarLoggedIn from '@/components/NavbarLoggedIn'; // 👈 asegúrate de tener bien la ruta
 
 type DecodedToken = {
   name: string;
@@ -34,21 +34,13 @@ export default function WelcomePage() {
     }
   }, []);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('token');
-    router.push('/login');
-  };
-
   return (
-    <main className="min-h-screen bg-blue-100 flex flex-col items-center justify-center p-6">
-      <h1 className="text-3xl font-bold text-blue-800 mb-4">👋 ¡Bienvenido!</h1>
-      <p className="text-lg text-gray-700 mb-6">Has iniciado sesión correctamente.</p>
-      <button
-        onClick={handleLogout}
-        className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-300"
-      >
-        Cerrar sesión
-      </button>
-    </main>
+    <>
+      <NavbarLoggedIn /> {/* 👈 navbar visible al estar logueado */}
+      <main className="min-h-screen bg-blue-100 flex flex-col items-center justify-center p-6">
+        <h1 className="text-3xl font-bold text-blue-800 mb-4">👋 ¡Bienvenido!</h1>
+        <p className="text-lg text-gray-700 mb-6">Has iniciado sesión correctamente.</p>
+      </main>
+    </>
   );
 }
